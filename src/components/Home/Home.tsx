@@ -1,54 +1,36 @@
-import React, {useState} from "react";
+import React, {useState, useEffect} from "react";
 
 import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions,Button } from '@headlessui/react'
 import { CheckIcon, ChevronDownIcon } from '@heroicons/react/20/solid';
 import clsx from 'clsx';
 import AddIcon from '../../assets/Add.png';
 import DeleteIcon from '../../assets/Delete.png';
-import AddModal from "../Add/Edit/Add_edit";
-import type { StudentInput } from "../Add/Edit/Add_edit";
+import AddModal from "../Add/Edit/Add";
+import EditStudentModal from '../Add/Edit/EditStudentModal';
+import { StudentsApi, type StudentInput } from '../../components/apifolder/api';
 
 type User = {
-  id: number;
+  id: string;  // mirrors Mongo _id
   name: string;
   age: number;
   email: string;
-    phone:number;
-    address:string;
-    grade:string;
-    schoolName:string;
-    hobbies:string[];
-    primaryLanguage:string;
+  phone: number;
+  address: string;
+  grade: string;
+  schoolName: string;
+  hobbies: string[];
+  primaryLanguage: string;
 };
 
 const Home: React.FC = () => {
 //Hardcoded user Data
    const userData: User[] =[
-  { id: 1, name: 'Alice', age: 30, email: 'New York'  ,phone:123456789 , address:'123 Main St, New York, NY' , grade:'A', schoolName:'YZ High School' ,hobbies:['reading ','swimming']  ,primaryLanguage:'English'     },
-  { id: 2, name: 'Bob', age: 24, email: 'Los Angeles' ,phone:123456789 , address:'123 Main St, New York, NY' , grade:'B', schoolName:'YZ High School' ,hobbies:['reading ','swimming']  ,primaryLanguage:'English'     },
-  { id: 3, name: 'Charlie', age: 35, email: 'Chicago' ,phone:123456789 , address:'123 Main St, New York, NY' , grade:'A', schoolName:'Z High School' ,hobbies:['reading ','swimming']  ,primaryLanguage:'English'     },
-  { id: 4, name: 'Alice', age: 30, email: 'New York'  ,phone:123456789 , address:'123 Main St, New York, NY' , grade:'C', schoolName:'YZ High School' ,hobbies:['reading ','swimming']  ,primaryLanguage:'English'     },
-  { id: 5, name: 'Bob', age: 24, email: 'Los Angeles' ,phone:123456789 , address:'123 Main St, New York, NY' , grade:'C', schoolName:'YZ High School' ,hobbies:['reading ','swimming']  ,primaryLanguage:'English'     },
-  { id: 6, name: 'Charlie', age: 35, email: 'Chicago' ,phone:123456789 , address:'123 Main St, New York, NY' , grade:'B', schoolName:'XYZ High School' ,hobbies:['reading ','swimming']  ,primaryLanguage:'English'     },
-  { id: 7, name: 'Alice', age: 30, email: 'New York'  ,phone:123456789 , address:'123 Main St, New York, NY' , grade:'C', schoolName:'XYZ High School' ,hobbies:['reading ','swimming']  ,primaryLanguage:'English'     },
-  { id: 8, name: 'Bob', age: 24, email: 'Los Angeles' ,phone:123456789 , address:'123 Main St, New York, NY' , grade:'A', schoolName:'XYZ High School' ,hobbies:['reading ','swimming']  ,primaryLanguage:'English'     },
-  { id: 9, name: 'Charlie', age: 35, email: 'Chicago' ,phone:123456789 , address:'123 Main St, New York, NY' , grade:'A', schoolName:'XYZ High School' ,hobbies:['reading ','swimming']  ,primaryLanguage:'English'     },
-  { id: 10, name: 'Charlie', age: 35, email: 'Chicago',phone:123456789 , address:'123 Main St, New York, NY' , grade:'A', schoolName:'XYZ High School' ,hobbies:['reading ','swimming']  ,primaryLanguage:'English'     },
-   { id: 11, name: 'Alice', age: 30, email: 'New York'  ,phone:123456789 , address:'123 Main St, New York, NY' , grade:'A', schoolName:'YZ High School' ,hobbies:['reading ','swimming']  ,primaryLanguage:'English'     },
-  { id: 12, name: 'Bob', age: 24, email: 'Los Angeles' ,phone:123456789 , address:'123 Main St, New York, NY' , grade:'B', schoolName:'YZ High School' ,hobbies:['reading ','swimming']  ,primaryLanguage:'English'     },
-  { id:13, name: 'Charlie', age: 35, email: 'Chicago' ,phone:123456789 , address:'123 Main St, New York, NY' , grade:'A', schoolName:'Z High School' ,hobbies:['reading ','swimming']  ,primaryLanguage:'English'     },
-  { id: 14, name: 'Alice', age: 30, email: 'New York'  ,phone:123456789 , address:'123 Main St, New York, NY' , grade:'C', schoolName:'YZ High School' ,hobbies:['reading ','swimming']  ,primaryLanguage:'English'     },
-  { id: 15, name: 'Bob', age: 24, email: 'Los Angeles' ,phone:123456789 , address:'123 Main St, New York, NY' , grade:'C', schoolName:'YZ High School' ,hobbies:['reading ','swimming']  ,primaryLanguage:'English'     },
-  { id: 16, name: 'Charlie', age: 35, email: 'Chicago' ,phone:123456789 , address:'123 Main St, New York, NY' , grade:'B', schoolName:'XYZ High School' ,hobbies:['reading ','swimming']  ,primaryLanguage:'English'     },
-  { id: 17, name: 'Alice', age: 30, email: 'New York'  ,phone:123456789 , address:'123 Main St, New York, NY' , grade:'C', schoolName:'XYZ High School' ,hobbies:['reading ','swimming']  ,primaryLanguage:'English'     },
-  { id: 18, name: 'Bob', age: 24, email: 'Los Angeles' ,phone:123456789 , address:'123 Main St, New York, NY' , grade:'A', schoolName:'XYZ High School' ,hobbies:['reading ','swimming']  ,primaryLanguage:'English'     },
-  { id: 19, name: 'Charlie', age: 35, email: 'Chicago' ,phone:123456789 , address:'123 Main St, New York, NY' , grade:'A', schoolName:'XYZ High School' ,hobbies:['reading ','swimming']  ,primaryLanguage:'English'     },
-  { id: 20, name: 'Charlie', age: 35, email: 'Chicago',phone:123456789 , address:'123 Main St, New York, NY' , grade:'A', schoolName:'XYZ High School' ,hobbies:['reading ','swimming']  ,primaryLanguage:'English'     },
 ];
 
 const [showAdd, setShowAdd] = useState(false);
 // Use state for table data
 const [data, setData] = useState<User[]>(userData);
+const [originalData, setOriginalData] = useState<User[]>([]);
 const [sorted, setSorted] = useState(false);
 // Pagination (2 pages for 20 items)
 const [currentPage, setCurrentPage] = useState(1);
@@ -58,9 +40,9 @@ const start = (currentPage - 1) * pageSize;
 const currentPageData = data.slice(start, start + pageSize);
 
 // selection state for checkboxes
-const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-const toggleOne = (id: number) => {
+const toggleOne = (id: string) => {
   setSelectedIds(prev => {
     const next = new Set(prev);
     if (next.has(id)) next.delete(id);
@@ -68,18 +50,9 @@ const toggleOne = (id: number) => {
     return next;
   });
 };
-const toggleAllCurrentPage = (checked: boolean) => {
-  setSelectedIds(prev => {
-    const next = new Set(prev);
-    currentPageData.forEach(r => {
-      if (checked) next.add(r.id);
-      else next.delete(r.id);
-    });
-    return next;
-  });
-};
-const allCurrentSelected =
-  currentPageData.length > 0 && currentPageData.every(r => selectedIds.has(r.id));
+
+const [editOpen, setEditOpen] = useState(false);
+const [editingStudent, setEditingStudent] = useState<User | null>(null);
 
 //Column names
   const columns: { header: string; accessor: keyof User }[] = [
@@ -97,51 +70,139 @@ const allCurrentSelected =
 
 //Puts in alphabetical order based on name
 const handlesubmit = () => {
-  if (selected?.sortType === 'Name') {
-    const sortedData = [...data].sort((a, b) => a.name.localeCompare(b.name));
-    setData(sortedData);
-    setSorted(true);
-  } else if (selected?.sortType === 'Age') {
-    const sortedData = [...data].sort((a, b) => a.age - b.age);
-    setData(sortedData);
-    setSorted(true);
-  } else if (selected?.sortType === 'Grade') {
-    const sortedData = [...data].sort((a, b) => a.grade.localeCompare(b.grade));
-    setData(sortedData);
-    setSorted(true);
-  } else if (selected?.sortType === 'SchoolName') {
-    const sortedData = [...data].sort((a, b) => a.schoolName.localeCompare(b.schoolName));
-    setData(sortedData);
-    setSorted(true);
-  } else {
-    setData(userData);
-    setSorted(false);
+  if (!selected) return;
+  let sortedData: User[] | null = null;
+  switch (selected.sortType) {
+    case 'Name':
+      sortedData = [...data].sort((a, b) => a.name.localeCompare(b.name));
+      break;
+    case 'Age':
+      sortedData = [...data].sort((a, b) => a.age - b.age);
+      break;
+    case 'Grade':
+      sortedData = [...data].sort((a, b) => a.grade.localeCompare(b.grade));
+      break;
+    case 'SchoolName':
+      sortedData = [...data].sort((a, b) => a.schoolName.localeCompare(b.schoolName));
+      break;
+    default:
+      // Reset to original (not empty)
+      setData(originalData);
+      setSorted(false);
+      return;
   }
+  setData(sortedData!);
+  setSorted(true);
+};
+
+const openEdit = (student: User) => {
+  setEditingStudent(student);
+  setEditOpen(true);
+};
+
+
+const handleEditSave = (updated: User) => {
+  if (!updated.id) return;
+
+  // Optimistic UI update
+  setData(prev => prev.map(s => (s.id === updated.id ? updated : s)));
+  setEditOpen(false);
+
+  StudentsApi.update(updated.id, {
+    name: updated.name,
+    age: updated.age,
+    email: updated.email,
+    phone: updated.phone,
+    address: updated.address,
+    grade: updated.grade,
+    schoolName: updated.schoolName,
+    hobbies: updated.hobbies,
+    primaryLanguage: updated.primaryLanguage,
+  })
+    .then(saved => {
+      const normalized: User = {
+        ...saved,
+        id: String(saved._id || saved.id),
+        hobbies: Array.isArray(saved.hobbies) ? saved.hobbies : []
+      };
+      setData(prev => prev.map(s => (s.id === normalized.id ? { ...s, ...normalized } : s)));
+    })
+    .catch(err => {
+      console.error('Update failed, reverting', err);
+      refreshStudents(); // fallback to server truth
+    });
+};
+
+useEffect(() => {
+  StudentsApi.list()
+    .then(students => {
+      const normalized: User[] = students.map((s: any) => {
+        const rawId = s._id ?? s.id;
+        const safeId = rawId ? String(rawId) : crypto.randomUUID();
+        return {
+          ...s,
+            id: safeId,
+            hobbies: Array.isArray(s.hobbies) ? s.hobbies : []
+        };
+      });
+      setData(normalized);
+      setOriginalData(normalized);
+    })
+    .catch(e => console.error('Failed to fetch students', e));
+}, []);
+
+// Optional helper to refetch if needed
+const refreshStudents = () => {
+  StudentsApi.list()
+    .then(students => {
+      setData(students.map((s: any) => ({
+        ...s,
+        id: String(s._id || s.id),
+        hobbies: Array.isArray(s.hobbies) ? s.hobbies : []
+      })));
+    })
+    .catch(e => console.error('Refresh failed', e));
 };
 
 const handleSaveStudent = (input: StudentInput) => {
-    setData(prev => {
-      const newId = prev.length ? Math.max(...prev.map(p => p.id)) + 1 : 1;
-      // Ensure all required fields are present and not undefined
+  console.log('Create request:', input);
+  StudentsApi.create(input)
+    .then((created: any) => {
+      console.log('Create response:', created);
+      const rawId = created._id ?? created.id;
+      const safeId = rawId ? String(rawId) : crypto.randomUUID();
       const newStudent: User = {
-        id: newId,
-        name: input.name,
-        age: input.age ?? 0,
-        email: input.email,
-        phone: input.phone ?? 0,
-        address: input.address,
-        grade: input.grade,
-        schoolName: input.schoolName,
-        hobbies: input.hobbies ?? [],
-        primaryLanguage: input.primaryLanguage,
+        ...created,
+        id: safeId,
+        hobbies: Array.isArray(created.hobbies) ? created.hobbies : []
       };
-      const next = [...prev, newStudent];
-      // optional: jump to the last page to see the new row
-      const newPageCount = Math.ceil(next.length / pageSize);
-      setCurrentPage(newPageCount);
-      return next;
+      // Put new at top (or change to [...prev, newStudent] for bottom)
+      setData(prev => [newStudent, ...prev]);
+      setOriginalData(prev => [newStudent, ...prev]);
+      setCurrentPage(1);
+      setSelectedIds(new Set());
+     
+    })
+    .catch(e => {
+      console.error('Create failed:', e);
     });
-  };
+};
+
+const handleDeleteSelected = () => {
+  if (selectedIds.size === 0) return;
+  const ids = Array.from(selectedIds);
+  StudentsApi.removeMany(ids)
+    .then((_: unknown): void => {
+      setData((prev: User[]): User[] => {
+        const next: User[] = prev.filter((r: User) => !selectedIds.has(r.id));
+        const newPageCount: number = Math.ceil(next.length / pageSize);
+        setCurrentPage((cp: number): number => Math.min(cp, Math.max(1, newPageCount || 1)));
+        return next;
+      });
+      setSelectedIds(new Set<string>());
+    })
+    .catch((e: unknown) => console.error('Delete failed', e));
+};
 
 const sortBy = [
   { id: 1, sortType: 'Name' },
@@ -159,18 +220,6 @@ const sortBy = [
       : sortBy.filter((sort) => {
           return sort.sortType.toLowerCase().includes(query.toLowerCase())
         })
-
-const handleDeleteSelected = () => {
-  if (selectedIds.size === 0) return; // nothing to delete
-  setData(prev => {
-    const next = prev.filter(r => !selectedIds.has(r.id));
-    const newPageCount = Math.ceil(next.length / pageSize);
-    // if current page is now out of range, move back
-    setCurrentPage(cp => Math.min(cp, Math.max(1, newPageCount || 1)));
-    return next;
-  });
-  setSelectedIds(new Set()); // clear selection
-};
 
 return (
   <div className="flex flex-col justify-start min-h-screen bg-white/95 min-w-screen text-white p-4">
@@ -269,7 +318,6 @@ return (
           {/* Table Header */}
           <thead>
             <tr>
-              {/* Empty header cell to align with row checkboxes */}
               <th className="py-2 px-4 border-b border-gray-300 bg-gray-100 w-10">
                 <span className="sr-only">Select</span>
               </th>
@@ -281,14 +329,12 @@ return (
                   {column.header}
                 </th>
               ))}
+              {/* Removed Actions column */}
             </tr>
           </thead>
-
-          {/* Table Body */}
           <tbody>
-            {currentPageData.map((row, rowIndex) => (
-              <tr key={rowIndex} className="hover:bg-gray-50">
-                {/* Checkbox cell */}
+            {currentPageData.map((row) => (
+              <tr key={row.id} className="hover:bg-gray-50">
                 <td className="py-2 px-4 border-b border-gray-300 color-gray-1000">
                   <input
                     type="checkbox"
@@ -299,7 +345,11 @@ return (
                   />
                 </td>
                 {columns.map((column, colIndex) => (
-                  <td key={colIndex} className="py-2 px-4 border-b border-gray-300 text-sm text-gray-800">
+                  <td
+                    key={colIndex}
+                    className="py-2 px-4 border-b border-gray-300 text-sm text-gray-800 cursor-pointer"
+                    onClick={() => openEdit(row)}  // remove this line if you want no editing at all
+                  >
                     {Array.isArray(row[column.accessor])
                       ? (row[column.accessor] as string[]).join(', ')
                       : (row[column.accessor] as any)}
@@ -310,7 +360,7 @@ return (
           </tbody>
         </table>
 
-        {/* Pagination: page numbers at the bottom */}
+        {/* page numbers at the bottom */}
         <nav className="mt-4 w-full flex justify-center">
           <ul className="inline-flex items-center gap-2">
             {Array.from({ length: pageCount }, (_, i) => i + 1).map((page) => (
@@ -333,6 +383,13 @@ return (
         </nav>
       </div>
     </div>
+
+    <EditStudentModal
+      open={editOpen}
+      student={editingStudent}
+      onClose={() => setEditOpen(false)}
+      onSave={handleEditSave}
+    />
   </div>
 )
 }

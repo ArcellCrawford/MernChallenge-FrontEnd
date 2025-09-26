@@ -16,7 +16,7 @@ export type StudentInput = {
 type Props = {
   open: boolean;
   onClose: () => void;
-  onSave: (student: StudentInput) => void;
+  onSave: (student: import('../../apifolder/api').StudentInput) => void;
 };
 
 export default function AddStudentModal({ open, onClose, onSave }: Props) {
@@ -40,8 +40,22 @@ export default function AddStudentModal({ open, onClose, onSave }: Props) {
       .split(",")
       .map(h => h.trim())
       .filter(Boolean);
-    onSave({ ...form, hobbies });
-    // reset and close
+
+    const payload: import('../../apifolder/api').StudentInput = {
+      name: form.name.trim(),
+      age: form.age ? Number(form.age) : 0,         // adjust if backend disallows 0
+      grade: form.grade.trim(),
+      schoolName: form.schoolName.trim(),
+      email: form.email.trim(),
+      phone: form.phone ? Number(form.phone) : 0,   // adjust similarly
+      address: form.address.trim(),
+      hobbies,
+      primaryLanguage: form.primaryLanguage.trim(),
+    };
+
+    console.log('Add payload:', payload);
+    onSave(payload);
+
     setForm({
       name: "",
       age: undefined,

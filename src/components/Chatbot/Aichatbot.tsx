@@ -13,9 +13,9 @@ const Aichatbot: React.FC = () => {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const logRef = useRef<HTMLDivElement>(null);
-  const [botText, setBotText] = useState(
-    "This is a placeholder response from the AI chatbot."
-  );
+  // const [botText, setBotText] = useState(
+  //   "This is a placeholder response from the AI chatbot."
+  // );
   useEffect(() => {
     logRef.current?.scrollTo({
       top: logRef.current.scrollHeight,
@@ -33,23 +33,58 @@ const Aichatbot: React.FC = () => {
     setInput("");
     setSending(true);
 
-    try {
-      // Replace this with backend call
+    // Include the new user message in the history sent to the backend
+    const historyToSend = [...messages, userMsg].map((m) => ({
+      role: m.role === "user" ? "user" : "model", // adjust if your API expects 'assistant'
+      content: m.content,
+    }));
 
-      //   setBotText("This is a placeholder response from the AI chatbot.");
+    try {
+      const res = await fetch("/api/ai/ask", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: text,
+          // Remove these if your backend doesn’t need them:
+          Question: text, question: text,
+          history: historyToSend,
+        }),
+      });
+
+      const ct = res.headers.get("content-type") || "";
+      if (!res.ok) {
+        const errBody = await res.text().catch(() => "");
+        throw new Error(`HTTP ${res.status} ${res.statusText} - ${errBody}`);
+      }
+
+      const payload =
+        ct.includes("application/json")
+          ? await res.json()
+          : await res.text();
+
+      const reply =
+        typeof payload === "string"
+          ? payload
+          : payload.reply ?? payload.answer ?? payload.message ?? "";
+
       setMessages((prev) => [
         ...prev,
-        { id: Date.now() + 1, role: "bot", content: botText },
+        { id: Date.now() + 1, role: "bot", content: reply || "(no reply)" },
       ]);
-      await new Promise((r) => setTimeout(r, 400));
+    } catch (err) {
+      console.error(err);
+      setMessages((prev) => [
+        ...prev,
+        { id: Date.now() + 2, role: "bot", content: "Sorry, something went wrong." },
+      ]);
     } finally {
       setSending(false);
     }
   };
 
   return (
-    <div className="min-h-screen w-full grid place-items-center bg-white">
-      <div className="w-full max-w-2xl h-[70vh] bg-white border border-gray-200 rounded-xl shadow-sm flex flex-col items-stretch mx-4">
+    <div className="min-h-screen min-w-screen flex items-center justify-center bg-white ">
+      <div className="w-full max-w-2xl h-[70vh] bg-white border border-gray-200 rounded-xl shadow-sm flex flex-col items-stretch mx-4 ">
         <header className="px-4 py-3 border-b border-gray-200">
           <h1 className="text-xl font-semibold text-blue-600">AI Chatbot</h1>
         </header>
@@ -78,6 +113,14 @@ const Aichatbot: React.FC = () => {
               </div>
             </div>
           ))}
+
+          {sending && (
+            <div className="flex justify-start">
+              <div className="max-w-[80%] rounded-lg px-3 py-2 text-sm shadow bg-gray-100 text-gray-900">
+                Typing…
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Input box */}
