@@ -1,7 +1,7 @@
 export const API_BASE = import.meta.env.VITE_API_URL || '';
 
 export type Student = {
-  id?: string;     // optional if backend returns _id
+  id?: string;    
   _id?: string;
   name: string;
   age: number;

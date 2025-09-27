@@ -41,7 +41,7 @@ const currentPageData = data.slice(start, start + pageSize);
 
 // selection state for checkboxes
 const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-
+//toggles selected checkbox
 const toggleOne = (id: string) => {
   setSelectedIds(prev => {
     const next = new Set(prev);
@@ -54,7 +54,7 @@ const toggleOne = (id: string) => {
 const [editOpen, setEditOpen] = useState(false);
 const [editingStudent, setEditingStudent] = useState<User | null>(null);
 
-//Column names
+//Column names/ fields
   const columns: { header: string; accessor: keyof User }[] = [
     { header: 'ID', accessor: 'id' },
     { header: 'Name', accessor: 'name' },
@@ -68,7 +68,7 @@ const [editingStudent, setEditingStudent] = useState<User | null>(null);
     { header: 'Primary Language', accessor: 'primaryLanguage' },
   ];
 
-//Puts in alphabetical order based on name
+//Puts in alphabetical order based on selected option
 const handlesubmit = () => {
   if (!selected) return;
   let sortedData: User[] | null = null;
@@ -104,7 +104,7 @@ const openEdit = (student: User) => {
 const handleEditSave = (updated: User) => {
   if (!updated.id) return;
 
-  // Optimistic UI update
+  //  UI update
   setData(prev => prev.map(s => (s.id === updated.id ? updated : s)));
   setEditOpen(false);
 
@@ -129,7 +129,7 @@ const handleEditSave = (updated: User) => {
     })
     .catch(err => {
       console.error('Update failed, reverting', err);
-      refreshStudents(); // fallback to server truth
+      refreshStudents(); 
     });
 };
 
@@ -163,7 +163,7 @@ const refreshStudents = () => {
     })
     .catch(e => console.error('Refresh failed', e));
 };
-
+//add new student to the backend and update the table
 const handleSaveStudent = (input: StudentInput) => {
   console.log('Create request:', input);
   StudentsApi.create(input)
@@ -187,7 +187,7 @@ const handleSaveStudent = (input: StudentInput) => {
       console.error('Create failed:', e);
     });
 };
-
+//deletes selected student and updates the table
 const handleDeleteSelected = () => {
   if (selectedIds.size === 0) return;
   const ids = Array.from(selectedIds);
@@ -203,7 +203,7 @@ const handleDeleteSelected = () => {
     })
     .catch((e: unknown) => console.error('Delete failed', e));
 };
-
+//sort options
 const sortBy = [
   { id: 1, sortType: 'Name' },
   { id: 2, sortType: 'Age' },
@@ -321,21 +321,22 @@ return (
               <th className="py-2 px-4 border-b border-gray-300 bg-gray-100 w-10">
                 <span className="sr-only">Select</span>
               </th>
-              {columns.map((column, index) => (
-                <th
-                  key={index}
-                  className="py-2 px-4 border-b border-gray-300 bg-gray-100 text-left text-sm font-semibold text-gray-700"
-                >
-                  {column.header}
-                </th>
-              ))}
-              {/* Removed Actions column */}
+              {columns
+                .filter(col => col.accessor !== 'id')
+                .map((column, index) => (
+                  <th
+                    key={index}
+                    className="py-2 px-4 border-b border-gray-300 bg-gray-100 text-left text-sm font-semibold text-gray-700"
+                  >
+                    {column.header}
+                  </th>
+                ))}
             </tr>
           </thead>
           <tbody>
             {currentPageData.map((row) => (
               <tr key={row.id} className="hover:bg-gray-50">
-                <td className="py-2 px-4 border-b border-gray-300 color-gray-1000">
+                <td className="py-2 px-4 border-b border-gray-300">
                   <input
                     type="checkbox"
                     checked={selectedIds.has(row.id)}
@@ -344,17 +345,19 @@ return (
                     aria-label={`Select row ${row.id}`}
                   />
                 </td>
-                {columns.map((column, colIndex) => (
-                  <td
-                    key={colIndex}
-                    className="py-2 px-4 border-b border-gray-300 text-sm text-gray-800 cursor-pointer"
-                    onClick={() => openEdit(row)}  // remove this line if you want no editing at all
-                  >
-                    {Array.isArray(row[column.accessor])
-                      ? (row[column.accessor] as string[]).join(', ')
-                      : (row[column.accessor] as any)}
-                  </td>
-                ))}
+                {columns
+                  .filter(col => col.accessor !== 'id')
+                  .map((column, colIndex) => (
+                    <td
+                      key={colIndex}
+                      className="py-2 px-4 border-b border-gray-300 text-sm text-gray-800 cursor-pointer"
+                      onClick={() => openEdit(row)}
+                    >
+                      {Array.isArray(row[column.accessor])
+                        ? (row[column.accessor] as string[]).join(', ')
+                        : (row[column.accessor] as any)}
+                    </td>
+                  ))}
               </tr>
             ))}
           </tbody>

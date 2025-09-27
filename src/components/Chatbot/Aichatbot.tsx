@@ -14,7 +14,7 @@ const Aichatbot: React.FC = () => {
   const [sending, setSending] = useState(false);
   const logRef = useRef<HTMLDivElement>(null);
   // const [botText, setBotText] = useState(
-  //   "This is a placeholder response from the AI chatbot."
+
   // );
   useEffect(() => {
     logRef.current?.scrollTo({
@@ -27,7 +27,7 @@ const Aichatbot: React.FC = () => {
     e.preventDefault();
     const text = input.trim();
     if (!text) return;
-
+//User message
     const userMsg: Message = { id: Date.now(), role: "user", content: text };
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
@@ -38,7 +38,7 @@ const Aichatbot: React.FC = () => {
       role: m.role === "user" ? "user" : "model", // adjust if your API expects 'assistant'
       content: m.content,
     }));
-
+//API call to post message and get response from ai 
     try {
       const res = await fetch("/api/ai/ask", {
         method: "POST",

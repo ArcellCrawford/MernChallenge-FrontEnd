@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Dialog, DialogPanel, DialogTitle,Input } from "@headlessui/react";
+import { Dialog, DialogPanel, DialogTitle, Input } from "@headlessui/react";
 
 export type StudentInput = {
   name: string;
@@ -19,6 +19,8 @@ type Props = {
   onSave: (student: import('../../apifolder/api').StudentInput) => void;
 };
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export default function AddStudentModal({ open, onClose, onSave }: Props) {
   const [form, setForm] = useState<StudentInput>({
     name: "",
@@ -33,27 +35,57 @@ export default function AddStudentModal({ open, onClose, onSave }: Props) {
   });
 
   const [hobbiesText, setHobbiesText] = useState("");
+  const [emailError, setEmailError] = useState<string | null>(null);
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    const normalizedEmail = form.email.trim().toLowerCase();
+    if (!normalizedEmail || !EMAIL_REGEX.test(normalizedEmail)) {
+      setEmailError("Please enter a valid email.");
+      return;
+    }
+
     const hobbies = hobbiesText
       .split(",")
       .map(h => h.trim())
       .filter(Boolean);
 
+    // Collect missing required fields
+    const missing: string[] = [];
+    if (!form.name.trim()) missing.push("Name");
+    if (form.age === undefined) missing.push("Age");
+    if (!form.grade.trim()) missing.push("Grade");
+    if (!form.schoolName.trim()) missing.push("School Name");
+    if (!normalizedEmail) missing.push("Email");
+    if (form.phone === undefined) missing.push("Phone");
+    if (!form.address.trim()) missing.push("Address");
+    if (!hobbies.length) missing.push("Hobbies");
+    if (!form.primaryLanguage.trim()) missing.push("Primary Language");
+
+    if (missing.length) {
+      alert("Please fill: " + missing.join(", "));
+      return;
+    }
+
+    // Extra phone length check (should be 10 digits)
+    if (String(form.phone!).length !== 10) {
+      alert("Phone must be exactly 10 digits.");
+      return;
+    }
+
     const payload: import('../../apifolder/api').StudentInput = {
       name: form.name.trim(),
-      age: form.age ? Number(form.age) : 0,         // adjust if backend disallows 0
+      age: Number(form.age),              // guaranteed defined
       grade: form.grade.trim(),
       schoolName: form.schoolName.trim(),
-      email: form.email.trim(),
-      phone: form.phone ? Number(form.phone) : 0,   // adjust similarly
+      email: normalizedEmail,
+      phone: Number(form.phone),          // guaranteed defined
       address: form.address.trim(),
       hobbies,
       primaryLanguage: form.primaryLanguage.trim(),
     };
 
-    console.log('Add payload:', payload);
     onSave(payload);
 
     setForm({
@@ -68,6 +100,7 @@ export default function AddStudentModal({ open, onClose, onSave }: Props) {
       primaryLanguage: "",
     });
     setHobbiesText("");
+    setEmailError(null);
     onClose();
   };
 
@@ -80,19 +113,77 @@ export default function AddStudentModal({ open, onClose, onSave }: Props) {
             Add New Student
           </DialogTitle>
 
-          <form className="mt-4 space-y-3 " onSubmit={submit}>
+          <form className="mt-4 space-y-3" onSubmit={submit}>
             <Input className="w-full rounded border border-gray-300 px-3 py-2 text-gray-700 " placeholder="Name" required
               value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
-            <Input className="w-full rounded border border-gray-300 px-3 py-2 text-gray-700" placeholder="Age" type="number"
-              value={form.age ?? ""} onChange={e => setForm(f => ({ ...f, age: Number(e.target.value) || undefined }))} />
+            <Input
+              className="w-full rounded border border-gray-300 px-3 py-2 text-gray-700"
+              placeholder="Age"
+              type="number"
+              required
+              min={0}
+              max={99}
+              value={form.age ?? ""}
+              onChange={e => {
+                const raw = e.target.value;
+                const digits = raw.replace(/\D/g, "").slice(0, 2);
+                setForm(f => ({ ...f, age: digits === "" ? undefined : Number(digits) }));
+              }}
+            />
             <Input className="w-full rounded border border-gray-300 px-3 py-2 text-gray-700" placeholder="Grade"
               value={form.grade} onChange={e => setForm(f => ({ ...f, grade: e.target.value }))} />
             <Input className="w-full rounded border border-gray-300 px-3 py-2 text-gray-700" placeholder="School Name"
               value={form.schoolName} onChange={e => setForm(f => ({ ...f, schoolName: e.target.value }))} />
-            <Input className="w-full rounded border border-gray-300 px-3 py-2 text-gray-700" placeholder="Email"
-              value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
-            <Input className="w-full rounded border border-gray-300 px-3 py-2 text-gray-700" placeholder="Phone" type="number"
-              value={form.phone ?? ""} onChange={e => setForm(f => ({ ...f, phone: Number(e.target.value) || undefined }))} />
+            <Input
+              type="email"
+              required
+              pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$"
+              className={`w-full rounded border px-3 py-2 text-gray-700 ${emailError ? 'border-red-500' : 'border-gray-300'}`}
+              placeholder="Email"
+              value={form.email}
+              aria-invalid={!!emailError}
+              aria-describedby={emailError ? 'email-error' : undefined}
+              onChange={e => {
+                const v = e.target.value;
+                setForm(f => ({ ...f, email: v }));
+                if (emailError && EMAIL_REGEX.test(v.trim().toLowerCase())) {
+                  setEmailError(null);
+                }
+              }}
+              onBlur={e => {
+                const v = e.target.value.trim().toLowerCase();
+                if (!v) setEmailError("Email is required.");
+                else if (!EMAIL_REGEX.test(v)) setEmailError("Invalid email format.");
+                else setEmailError(null);
+              }}
+            />
+            {emailError && (
+              <p id="email-error" className="text-xs text-red-600">
+                {emailError}
+              </p>
+            )}
+            <Input
+              className="w-full rounded border border-gray-300 px-3 py-2 text-gray-700"
+              placeholder="Phone Number"
+              type="text"
+              inputMode="numeric"
+              pattern="\d{10}"
+              required
+              maxLength={10}
+              value={form.phone === undefined ? "" : String(form.phone)}
+              onChange={e => {
+                const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
+                setForm(f => ({ ...f, phone: digits === "" ? undefined : Number(digits) }));
+              }}
+              onBlur={e => {
+                const digits = e.target.value.replace(/\D/g, "");
+                if (digits && digits.length < 10) {
+                  e.currentTarget.setCustomValidity("Phone must be exactly 10 digits");
+                } else {
+                  e.currentTarget.setCustomValidity("");
+                }
+              }}
+            />
             <Input className="w-full rounded border border-gray-300 px-3 py-2 text-gray-700" placeholder="Address"
               value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} />
             <Input className="w-full rounded border border-gray-300 px-3 py-2 text-gray-700" placeholder="Hobbies (comma separated)"
