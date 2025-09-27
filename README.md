@@ -1,69 +1,54 @@
-# React + TypeScript + Vite
+MERN CHALLENGE FRONTEND 
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+OVERVIEW
+____________________
+    This repository manages the Front End of the Mern Challenge, a project focused on the managment of 
+student information through CRUD operations. 
 
-Currently, two official plugins are available:
+CORE FILES
+______________________
+Home.tsx - Contains the majority of CRUD features, from here you can add,delete,sort, and edit student 
+data which will be saved to the backend.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Add.tsx- Code for the UI of the add student modal
 
-## Expanding the ESLint configuration
+EditStudentModal.tsx- Allows user to click a student row too edit information that is inputted.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+AppRoutes.tsx-Routes leading to the home page and the Ai chatbot page.
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+Aichatbot.tsx-Ui for the Ai chatbot. User message is sent from here to the google gemini LLM 
+to provide a concise answer based on information from the mongo db database.
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+TECH STACK
+____________________
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+React19 
+Vite 
+Headless UI
+Tailwind CSS
+React Router 
+Heroicons 
+clsx
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+CORE FEATURES
+___________________
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Paginated Table
+Sorting(name,age,grade,school name)
+Add Student 
+Edit Student Information 
+Student Deletion 
+Email Validation 
+Chatbot
+
+INSTALLATION
+___________________
+git clone <repo>
+cd MernChallenge-FrontEnd
+npm install
+npm run dev
+
+ADDITIONAL NOTES
+__________________
+Download MERNCHALLENGE BACKEND and run it for main features to work as intended 
